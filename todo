@@ -1,0 +1,354 @@
+# PREMIUM FISH MARKET — ART-DIRECTED BUILD BRIEF (v2)
+
+You are a senior creative developer and art director. Build a **high-end, experimental seafood e-commerce site** for a small Mediterranean fish business that buys, sells and delivers fresh fish (Tunisia, prices in **TND**, ordering via **WhatsApp**).
+
+The result must feel like an **art-directed digital experience** (Awwwards / FWA caliber), never like an AI-generated template.
+
+Inspiration (do NOT depend on fetching it; treat the description below as the reference): the Dribbble shot "Premium Fish Market – Niche eCommerce" → oversized type, large isolated fish, strong colour blocking, asymmetry, overlap, horizontal product exploration, editorial spacing.
+Do not copy it pixel-for-pixel. Create a distinct brand.
+
+---
+
+## 0. HOW TO READ THIS BRIEF
+
+**Rule IDs.** Every rule has an ID (e.g. `T3`, `A5`). Your final self-audit must reference them.
+
+**Precedence when rules conflict (highest first):**
+1. Hard Constraints (§1)
+2. Performance & Accessibility (§9)
+3. Art direction & design (§3–§5)
+4. Section specs (§6)
+5. Convenience / simplicity
+
+**Decision policy.** Do not ask clarifying questions. Make the best decision, record it in `DECISIONS.md` (one line each), and keep going. If something is truly unavailable (e.g. real photography), follow the fallback stated in this brief — never silently downgrade.
+
+**Priority of the experience:** design first, functionality supports design. Conventional e-commerce UI must never override the visual identity — but every function listed must still work.
+
+**Build order (gated).** Do not start a later phase until the earlier one is real and visible in the browser:
+1. Design tokens (colour, type scale, spacing) in `tailwind.config`
+2. Typography + hero composition (static)
+3. Fish imagery pipeline (`<FishImage>`, asset specs)
+4. GSAP motion language (`ease` set, durations, hero timeline)
+5. Horizontal product exploration (signature interaction)
+6. Remaining sections, cart, WhatsApp, transitions, cursor, grain
+7. Responsive pass (separate mobile compositions)
+8. Performance/accessibility pass + self-audit
+
+---
+
+## 1. HARD CONSTRAINTS (violating any = failed build)
+
+**Stack**
+- `H1` Vite + React (functional components, hooks), **Tailwind CSS**, **gsap** + **ScrollTrigger** (+ **SplitText** if available; otherwise a small manual splitter), **lucide-react** for icons.
+- `H2` Allowed extras (non-UI only): `react-router-dom`, `@gsap/react` (`useGSAP`). Nothing else without an entry in `DECISIONS.md` justifying it.
+- `H3` **Forbidden:** Framer Motion, Bootstrap, Material UI, Chakra, shadcn/Radix/Headless UI, any CSS framework or component library other than Tailwind, any smooth-scroll/scroll-jacking library, any CSS-in-JS.
+
+**Styling**
+- `H4` All layout, spacing, type, colour, borders, sizing, positioning = **Tailwind utility classes**. Design tokens live in `tailwind.config` (`theme.extend`), not in a custom CSS system.
+- `H5` Custom CSS is allowed **only** for: `@font-face`/font import, scrollbar styling, browser fixes, and anything technically impossible in Tailwind. Keep it in one small `index.css` (`@tailwind` directives + ≤ 40 lines). Every custom rule needs a one-line comment saying why Tailwind couldn't do it.
+- `H6` No Tailwind `animate-*` / CSS keyframes for any visible animation. No CSS transitions for anything beyond trivial colour/opacity on focus states.
+
+**Animation**
+- `H7` **GSAP is the only animation engine.** Timelines, staggers, transforms, parallax, pinning, horizontal scroll, mouse interaction.
+- `H8` Animate only `x, y, xPercent, yPercent, scale, rotation, opacity, clipPath` (clip-path only for reveals, see `P4`). **Never** animate `width, height, top, left, margin, padding, font-size, box-shadow, filter: blur` on scroll.
+- `H9` No generic "fade everything in on scroll". Every motion needs a stated intention (see §4 motion language). If you can't say why it moves, delete it.
+
+**Content**
+- `H10` No emoji anywhere in the shipped UI (the 🐟 in the sketches is a placeholder for fish imagery).
+- `H11` Do not hotlink external images. All assets local, optimised (WebP/AVIF).
+- `H12` Never invent verifiable business claims (founding year, certifications, boat names, awards). Placeholder copy must be plausible but flagged (see `C3`).
+
+---
+
+## 2. BRAND SYSTEM
+
+### 2.1 Brand
+- `B1` Brand name is a single config value in `src/data/brand.js` (`name`, `tagline`, `whatsappNumber`, `city`, `currency: "TND"`). Default placeholder name: **MARÉA**. Changing the file must rebrand the whole site.
+- `B2` WhatsApp number comes from `VITE_WHATSAPP_NUMBER` (international format, digits only, e.g. `216XXXXXXXX`) with a clearly-marked fallback placeholder.
+
+### 2.2 Colour tokens (Tailwind `colors`)
+```
+navy       #071342   ocean   #23869C   turquoise #63AEB6
+peach      #E39A7C   coral   #D86F55   cream     #E4E0D4
+sand       #B6A58D   ink     #171715
+```
+- `K1` **One dominant colour identity per section, max 3 colours visible at once** (background + type + one accent). Never use all eight together.
+- `K2` Colour is applied as **large flat blocks**. No decorative gradients. The only permitted gradient is a subtle depth falloff behind the fish (≤ 8% opacity difference).
+- `K3` Section assignment (deliberate, don't improvise):
+
+| Section | Background | Type | Accent |
+|---|---|---|---|
+| Hero | cream | navy | ocean (circle), coral (labels) |
+| Explore the Catch (horizontal) | navy | cream | turquoise, peach |
+| Fresh Today | coral | ink / cream | navy |
+| Pick Your Cut | peach | navy | cream |
+| Story | cream → sand split | ink | coral |
+| Mediterranean | ocean / turquoise / navy layered planes | cream | peach (sun) |
+| Final CTA | navy | cream | peach (WhatsApp button) |
+| Footer | ink | cream | sand |
+
+- `K4` Text contrast must pass WCAG AA for body/UI text (large display type may use AA-large).
+
+### 2.3 Typography
+- `T1` Two families only: **Instrument Serif** (display, regular + italic) and **DM Sans** (UI, labels, body). Self-hosted via `@fontsource` or `@font-face` (allowed by `H5`), `font-display: swap`, preload the display font, subset to Latin.
+- `T2` Hero headline: **huge** — roughly `clamp(5.5rem, 24vw, 28rem)` desktop, line-height ≈ `0.78–0.85`, tight negative tracking. It may overlap the fish, be cropped by the viewport, sit behind the fish, and move on scroll.
+- `T3` Section headlines: `clamp(3.5rem, 13vw, 16rem)` desktop. Mixed roman + *italic* words inside one headline is encouraged (e.g. "FROM *the* SEA").
+- `T4` Micro-labels: DM Sans, 10–11px, uppercase, `tracking-[0.18em]`, always paired with a thin rule or index number (`CATCH / 001`). These are the "editorial metadata" that makes it feel printed.
+- `T5` Body copy: DM Sans 15–17px, max 52ch, generous leading. Short paragraphs only.
+- `T6` Prices in the serif, tabular figures, with `TND / KG` in micro-label style.
+- `T7` Headlines are real text in the DOM with an `aria-label` on the heading; split spans are `aria-hidden`.
+
+### 2.4 Layout language
+- `L1` Base grid: 12 columns, but compositions are **asymmetric and intentionally off-grid**: elements overlap column boundaries, bleed off the viewport, or rotate 90° (vertical labels).
+- `L2` Forbidden compositions: centred-text-over-image hero, three equal cards in a row, repeated identical cards, pill clusters, big rounded buttons, shadow-heavy UI, glassmorphism, blue SaaS styling.
+- `L3` Radius: **0 by default.** The circle is the only recurring round shape (hero circle, cursor, cut selector markers). Buttons are rectangular, underlined or outlined with 1px borders.
+- `L4` Borders: 1px hairlines in navy/cream at 20–40% opacity. No box-shadows except a single soft contact shadow under floating fish (an ellipse element animated with transforms).
+- `L5` Whitespace is a design material: sections are tall; fish are enormous; metadata is tiny.
+
+---
+
+## 3. IMAGERY & ASSETS
+
+- `I1` Fish imagery = **photorealistic, isolated cut-outs on transparent background**, one consistent angle (side profile, same facing direction per set), consistent soft top-left light. Species: sea bass (loup), gilt-head bream (dorade), salmon, tuna, red mullet (rouget), sardines; salmon fillet for the cut selector.
+- `I2` Asset spec (document in `/public/fish/ASSETS.md`):
+  - Hero fish: 2400 px wide, transparent WebP (+AVIF), < 250 KB.
+  - Product fish: 1600 px wide, transparent WebP, < 160 KB.
+  - Scenic Mediterranean plates (sea, boat, coastline, light): 2400 px, WebP/AVIF, < 300 KB each, 3–4 plates for parallax layers.
+  - Filenames: `seabass.webp`, `dorade.webp`, `salmon.webp`, `tuna.webp`, `mullet.webp`, `sardines.webp`, `salmon-fillet.webp`, `med-sea.webp`, `med-boat.webp`, `med-coast.webp`, `med-sun.webp`, `story-boat.webp`, `story-hands.webp`.
+- `I3` All images render through one `<FishImage>` component: explicit `width/height` (no CLS), `decoding="async"`, `loading="lazy"` except the hero fish (`fetchpriority="high"`, eager), descriptive `alt`.
+- `I4` **Fallback (assets not provided):** `<FishImage>` renders a refined, hand-built **SVG fish silhouette** in an editorial two-tone treatment (navy/turquoise or coral/peach), with line-drawn scale and fin detail, visibly intentional — not a grey box, not emoji, not a stock URL. The code must swap to the real file automatically when it exists in `/public/fish/`. State in the final report which assets are still placeholders.
+- `I5` Organic line graphics (nets, wave lines, contour lines, hand-drawn fish outlines) are **inline SVG** with `stroke` only, `vector-effect: non-scaling-stroke`, drawn in on scroll by animating `strokeDashoffset` (permitted exception to `H8` for SVG stroke draws on a handful of paths).
+- `I6` Grain: one fixed, `pointer-events-none` overlay using an inline SVG `feTurbulence` data-URI as a Tailwind arbitrary `bg-[url(...)]`, `opacity ≈ 0.05–0.07`, `mix-blend-multiply`. **Static** (not animated). Barely visible; if you can notice it at a glance, reduce it.
+
+---
+
+## 4. MOTION LANGUAGE (define first, reuse everywhere)
+
+Create `src/animations/motion.js` exporting the only allowed eases/durations:
+
+```
+eases:     reveal  "expo.out"        // type, fish entrances
+           travel  "power3.inOut"    // transitions, drawer
+           settle  "power2.out"      // hovers
+           linear  "none"            // scrubbed scroll only
+durations: micro 0.35 · base 0.8 · slow 1.4 · epic 2.2
+```
+
+- `A1` **Character of motion:** slow, weighted, "like water". Long eases, overlap between tweens (negative offsets), nothing snappy or bouncy. No `elastic`/`back`/`bounce`.
+- `A2` Every animation follows one of five intentions: **Reveal** (mask/clip, not fade), **Drift** (parallax), **Weight** (scale/settle), **Travel** (route/drawer), **Respond** (hover/cursor).
+- `A3` Use `gsap.matchMedia()` for all breakpoint-specific behaviour and `prefers-reduced-motion`. Use `useGSAP`/`gsap.context()` with `scope` for **every** component; revert on unmount.
+- `A4` Must survive React StrictMode double-mounts, route changes and window resize with **no duplicated triggers, no leaked listeners, no stuck pins**.
+- `A5` Call `ScrollTrigger.refresh()` after fonts and hero/product images load (`document.fonts.ready` + image `onLoad` batch) and use `invalidateOnRefresh: true` on any trigger with measured values.
+- `A6` No `will-change` globally. Apply it via GSAP (`force3D`) only on the few elements actively moving.
+
+### 4.1 Hero entrance timeline (one master timeline, ~3.2 s total, `heroAnimations.js`)
+```
+0.00  background plane settles (cream, subtle scale 1.04 → 1)           reveal
+0.30  circle draws in: scale 0.6 → 1 from center + opacity 0 → 1        reveal
+0.55  headline lines rise from masks (yPercent 110 → 0), per-line stagger 0.12,
+      characters stagger 0.02 inside the line                           reveal
+1.05  fish: x +120 → 0, y +40 → 0, scale 0.85 → 1, rotation -3 → 0     weight
+1.40  contact shadow ellipse scaleX 0.7 → 1
+1.70  line-art (net / wave strokes) draws via strokeDashoffset
+2.00  micro-labels (MEDITERRANEAN / CATCH 001 / FRESH TODAY) clip-reveal
+2.40  header fades in from y -12 (last), scroll cue starts a looping 1.6 s nudge
+```
+- `A7` Not fast, not flashy: it should feel expensive. No loader screen. Content must be visible/usable if JS animations fail (progressive: set initial states from GSAP, not CSS `opacity-0` that never resolves).
+
+### 4.2 Mouse parallax (`useMouseParallax.js`)
+- `A8` One `mousemove` listener, `gsap.quickTo` per layer (duration ≈ 0.9, `power3`). **No React state per mouse event.** Max displacement:
+  - Fish: ±24 px x, ±14 px y, ±1.5° rotation
+  - Circle: ±10 px
+  - Headline: ±5 px
+  - Background: ±1 px (or none)
+- `A9` Active only while hero is in viewport (ScrollTrigger `onToggle`), disabled on `(pointer: coarse)` and reduced motion.
+
+### 4.3 Product hover (`FishProduct`)
+- `A10` On hover: fish `scale 1 → 1.04` and `x` shifts 12 px toward the cursor side; name translates `x +16`; arrow `x +10`; metadata block reveals via clip mask; cursor label becomes `VIEW`. All via one reusable `hover` timeline per product, reversible, `settle` ease, `micro` duration. Understated.
+
+### 4.4 Page transitions
+- `A11` Router-level transition: a full-height colour panel (taken from the destination page's colour identity) wipes in with `yPercent` + the destination's title in huge serif slides through the viewport, then the panel exits. Total ≤ 1.1 s. Kill all ScrollTriggers of the leaving page, scroll to top, refresh, then play the new page's entrance. Disable in reduced-motion (instant swap).
+
+---
+
+## 5. COMPONENT & DATA ARCHITECTURE
+
+```
+src/
+  main.jsx  App.jsx
+  components/  Header Hero FishExplorer FishProduct FreshToday CutSelector
+               Story Mediterranean Cart WhatsAppOrder FinalCTA Footer
+               FishImage Cursor Grain PageTransition
+  data/        fish.js  cuts.js  brand.js  copy.js
+  hooks/       useMouseParallax.js  useMedia.js  useCart.js
+  animations/  motion.js  heroAnimations.js  scrollAnimations.js
+  pages/       Home.jsx  Shop.jsx  Story.jsx
+DECISIONS.md   public/fish/ASSETS.md
+```
+
+- `D1` No component over ~200 lines. No section logic in `App.jsx`.
+- `D2` UI renders **only** from data:
+```js
+// data/fish.js
+{ id: "sea-bass", name: "Sea Bass", latin: "Dicentrarchus labrax",
+  pricePerKg: 18.9, unit: "kg", origin: "Mediterranean",
+  availability: "fresh-today" | "on-order" | "sold-out",
+  catchNo: "001", image: "seabass.webp", color: "turquoise",
+  note: "Mediterranean catch", preparations: ["Whole","Cleaned","Filleted"],
+  weights: [500, 1000, 2000] }
+```
+```js
+// data/cuts.js — per fish: ordered segments
+{ id: "center", label: "Center cut", shape: "<svg path/polygon>",
+  price: 14.5, suggestion: "Perfect for grilling.", weightHint: "≈ 400 g" }
+```
+- `D3` Cart: `useCart` (context + reducer), persisted to `localStorage` in try/catch. Line = `{ fishId, grams, preparation }`. Price = `pricePerKg × grams / 1000`, rounded to 2 decimals, formatted with `Intl.NumberFormat("fr-TN")` + " TND".
+- `D4` Prices/availability are data — "Fresh today" is derived from `availability`, never hard-coded.
+
+---
+
+## 6. SECTION SPECS
+
+### 6.1 Header (`Header`)
+- `S1` Floating, minimal, part of the artwork. Desktop: `☰` left (Lucide `Menu`, thin stroke), brand centered in micro-caps, `SHOP · ABOUT · CART(n)` right. Mobile: `☰ — BRAND — BAG(n)`. No background bar; hairline only; colour inverts via `mix-blend-difference` or per-section colour flip on ScrollTrigger. Menu opens a full-screen overlay with giant serif links.
+
+### 6.2 Hero (`Hero`)
+- `S2` 100svh. Cream plane; a very large **ocean circle** partly cropped by the viewport; headline `FRESH / FROM / THE SEA` stacked huge, left-weighted, the word *FROM* indented and italic; the **sea bass** floats large in front, overlapping the headline's lower lines and breaking out of the circle.
+- `S3` Editorial labels arranged off-grid: `MEDITERRANEAN / CATCH 001` (top-left), `FRESH TODAY` (rotated 90° on right edge), `SCROLL TO EXPLORE ↓` (bottom-left, with line). Thin line-art net or wave strokes crossing behind the fish.
+- `S4` Scroll: fish drifts up slower than the page and scales 1 → 1.08; headline drifts the opposite way; circle scales 1 → 1.15. Scrubbed.
+
+### 6.3 Explore the Catch — signature horizontal section (`FishExplorer`)
+- `S5` Desktop: ScrollTrigger **pins** the section, translates a flex track on `x` (`end: () => "+=" + track.scrollWidth`, `scrub: 0.6`, `anticipatePin: 1`, `invalidateOnRefresh`). Heading `EXPLORE THE CATCH` is oversized and itself moves at a different rate than the track. Each fish uses `containerAnimation` for its own parallax (fish moves slightly faster than its label). A thin progress rule + counter (`02 / 06`) shows position.
+- `S6` Each product is an **editorial object**, not a card: enormous fish (breaking out of its panel boundaries), name huge in serif behind/overlapping, micro-metadata (origin, catch number, availability), price in serif with `TND / KG`, an arrow control. Panels alternate vertical alignment and width (never identical).
+- `S7` Mobile (< 768 px): **no pin.** Becomes a native horizontal carousel with CSS scroll-snap implemented via Tailwind (`snap-x snap-mandatory overflow-x-auto`), fish still large, with GSAP-driven parallax on the fish inside each slide using scroll position of the carousel.
+- `S8` Clicking a product opens a quick-add sheet (weight + preparation + Add) — rectangular, minimal, GSAP-animated; no modal library.
+
+### 6.4 Fresh Today (`FreshToday`)
+- `S9` Coral background. `FRESH / TODAY` gigantic, partially cropped, one word moving left and the other right on scroll (scrubbed, ±8% `xPercent`). Below/over it: **only fish with `availability === "fresh-today"`**, displayed as a staggered, irregular editorial list (not a grid): name, "Fresh today" tag, price, origin, add button. Sold-out items appear struck-through at low contrast. Availability must be unmistakable within one glance.
+
+### 6.5 Pick Your Cut (`CutSelector`)
+- `S10` Peach background. One enormous salmon fillet (or whole fish) drawn as an SVG with segment overlays: `HEAD | CENTER | FILLET | TAIL` (data-driven from `cuts.js`). Segments are real `<button>`/`<path>` elements with `role` + `aria-label`.
+- `S11` Hover/focus/tap a segment: that segment highlights (opacity/colour, others dim to 0.35); a large info block transitions in (GSAP): cut name, one-line suggestion ("Perfect for grilling."), price, `ADD →`. Cursor shows a small marker. Feels like pointing at a counter.
+- `S12` Mobile: tap to select (no hover reliance); info block docks below the fish; segment list is also available as accessible buttons.
+
+### 6.6 Story (`Story`)
+- `S13` Not "About Us". Headline `FROM THE SEA / TO YOUR TABLE.` huge, split across two colour planes (cream/sand). Large photographic plates with **clip-path inset reveals** on scroll (`inset(100% 0 0 0)` → `inset(0)`, `reveal` ease) and 1.15 → 1 inner image scale. 120–160 words of first-person copy: early mornings, the quay, the people who buy, delivery. Typography drifts at a different speed than imagery.
+
+### 6.7 Mediterranean (`Mediterranean`)
+- `S14` Immersive layered scene: 4 depth layers (sea, coast, boat, sun/light) on separate transforms with distinct scroll speeds (0.15 / 0.3 / 0.5 / 0.7), a pinned segment where `TASTE / THE / MEDITERRANEAN.` is revealed word by word while the scene scales 1 → 1.12. Subtle wave line-art drifting horizontally (transform-only). Restrained — elegance over spectacle.
+
+### 6.8 Final CTA (`FinalCTA`)
+- `S15` Navy. Giant type reveal (`ORDER / FRESH.` or equivalent) with line-mask reveal on enter. Large rectangular WhatsApp button (peach on navy) with an arrow that travels on hover. Delivery zones / hours in micro-labels.
+
+### 6.9 Cart (`Cart`)
+- `S16` Right-side drawer, full-height, ink-on-cream, `travel` ease, background content dimmed (opacity only). Title `YOUR CATCH`. Lines: name, weight, preparation (editable), price, remove. Hairline divider, `TOTAL`, then the WhatsApp CTA. Focus-trapped, `Esc` closes, `aria-modal`, restores focus. Empty state is designed (not blank).
+
+### 6.10 WhatsApp ordering (`WhatsAppOrder`)
+- `S17` Primary conversion. Builds `https://wa.me/<number>?text=<encodeURIComponent(message)>` and opens in a new tab (`rel="noopener noreferrer"`). Message template:
+```
+Hello,
+
+I would like to order:
+
+1kg Sea Bass
+500g Salmon
+
+Preparation:
+Cleaned
+
+Name:
+Phone:
+
+Thank you.
+```
+  - Per-line preparation is listed (group lines by preparation if different, e.g. `Sea Bass — Cleaned`).
+  - Weights formatted `500g` / `1kg` / `1.5kg`.
+  - Optional delivery notes field in the drawer; optional "Name"/"Phone" prefill remembered locally.
+  - Include the total in the message ("Estimated total: 31.80 TND").
+  - Disabled with a clear state when the cart is empty. Unit-test the message builder.
+
+### 6.11 Cursor (`Cursor`)
+- `S18` Desktop only (`(hover: hover) and (pointer: fine)`). One fixed element, `quickTo` follow, `mix-blend-difference`. Driven by `data-cursor="view|arrow|add|drag"` attributes (event delegation, no per-element listeners). Labels: `VIEW` over fish, `→` over interactive elements, `ADD` over add buttons. Restore the native cursor on touch and on reduced motion. The native cursor must never be hidden if the custom one fails to mount.
+
+---
+
+## 7. COPY
+
+- `C1` Voice: warm, specific, a little salty; short sentences; no marketing clichés ("unparalleled", "elevate", "seamless", "curated"). Think a fishmonger who reads good magazines.
+- `C2` All copy lives in `data/copy.js` / `data/fish.js`.
+- `C3` Story/delivery copy is **placeholder**, marked in `copy.js` with `// EDIT: replace with the owner's real story`. Do not fabricate specifics (see `H12`).
+
+---
+
+## 8. RESPONSIVE (design it, don't shrink it)
+
+- `R1` Breakpoints: mobile < 768, tablet 768–1279, desktop ≥ 1280. Desktop is the flagship; mobile is its own composition.
+- `R2` Mobile hero: headline reduced (`clamp(4rem, 26vw, 8rem)`), fish stays huge and overlaps the headline's last line, circle repositioned off-canvas bottom-right, labels reduced to two.
+- `R3` Mobile: no pinned sections, no complex overlaps that harm legibility; carousels use native snap; hover interactions become tap states; tap targets ≥ 44 px.
+- `R4` Test at 360, 390, 768, 1024, 1440, 1920 px. No horizontal page overflow at any width (`overflow-x: clip` on the root wrapper).
+
+---
+
+## 9. PERFORMANCE & ACCESSIBILITY (non-negotiable)
+
+**Performance**
+- `P1` Targets: Lighthouse Performance ≥ 90 desktop, ≥ 80 mobile; LCP < 2.5 s; CLS < 0.05; no long main-thread tasks from animation setup.
+- `P2` GPU-friendly only (`H8`). One `ScrollTrigger` per logical effect; batch where possible (`ScrollTrigger.batch`). Pause hero parallax/tickers off-screen.
+- `P3` Lazy-load everything below the fold (images, heavy sections via `React.lazy` where it doesn't break pinning). Preload hero fish + display font.
+- `P4` `clip-path` reveals are allowed because they are compositor-friendly in modern browsers; limit simultaneous clip-path animations to ≤ 3 in view.
+- `P5` Clean-up is mandatory: `useGSAP`/`gsap.context().revert()`, `ScrollTrigger.kill()`, remove event listeners, cancel `quickTo` targets on unmount.
+
+**Accessibility**
+- `X1` `prefers-reduced-motion: reduce` → no pin, no parallax, no splitting animation; content is shown in final state with, at most, short opacity reveals via `gsap.matchMedia`.
+- `X2` Semantic landmarks (`header`, `main`, `section[aria-labelledby]`, `footer`), logical heading order, visible focus rings (Tailwind `focus-visible:` utilities, high-contrast), full keyboard operability of header menu, explorer, cut selector, cart and quick-add.
+- `X3` Horizontal explorer must remain keyboard-reachable (focus on a product scrolls the page to the correct progress position).
+- `X4` Decorative SVG/line-art `aria-hidden`. Images have real `alt`. The WhatsApp link announces that it opens a new tab.
+
+---
+
+## 10. ANTI-GENERIC GATE (run on every section before moving on)
+
+A section **fails** and must be redesigned if any answer is "yes":
+1. Could this section's layout be dropped into a random SaaS/Shopify template unchanged?
+2. Is the main content centred with a symmetric image?
+3. Are there three or more identical siblings in a row?
+4. Is any element rounded > 2 px without being the circle motif?
+5. Does an animation exist that only "fades in"?
+6. Is the largest text smaller than ~10vw on desktop where a headline is expected?
+7. Is there any drop-shadow, glass blur or gradient used decoratively?
+8. Would a creative-agency art director say "that's the first obvious layout"?
+
+Then answer once: **"Would a premium creative agency have shipped this?"** If not, redesign.
+
+---
+
+## 11. DEFINITION OF DONE & SELF-AUDIT
+
+Before declaring completion, **actually run and verify** (don't assume):
+
+- [ ] `npm run build` passes with zero errors/warnings you caused; `npm run dev` serves.
+- [ ] `package.json` contains none of the forbidden libraries (`H3`); extras are justified.
+- [ ] `grep` finds no `framer-motion`, no `animate-` Tailwind classes, no `@keyframes` in the project CSS, no `localStorage` without try/catch.
+- [ ] Custom CSS ≤ 40 lines and each rule commented (`H5`).
+- [ ] Hero timeline plays in the specified order and total time (§4.1); mouse parallax works with no React re-renders (verify with a render counter or React Profiler).
+- [ ] Horizontal section pins, scrubs, refreshes correctly after resize and after images load, and un-pins on mobile.
+- [ ] Route change leaves **0** orphaned ScrollTriggers (`ScrollTrigger.getAll().length` logged before/after navigation).
+- [ ] StrictMode enabled; no duplicate triggers or listeners.
+- [ ] Cart add/edit/remove/persist; totals correct; WhatsApp message matches the template; message builder tested.
+- [ ] Reduced-motion mode verified; keyboard-only run-through completed.
+- [ ] Viewports checked: 360 / 390 / 768 / 1024 / 1440 / 1920 — no overflow, nothing clipped unintentionally.
+- [ ] Lighthouse results reported (§P1).
+- [ ] Anti-generic gate (§10) answered for every section.
+
+**Final response format (keep it tight):**
+1. What was built (3–5 lines) and how to run it.
+2. `DECISIONS.md` highlights (≤ 8 bullets).
+3. Asset status: which images are real vs. SVG fallback, and the exact files still needed (per `ASSETS.md`).
+4. Self-audit table: rule ID → pass / fail / not applicable, with a one-line proof for any fail or deviation.
+5. Known limitations. Be honest; do not claim a check passed unless you ran it.
+
+---
+
+## FINAL INSTRUCTION
+
+Establish **hierarchy → typography → colour → hero → fish imagery → horizontal interaction → motion language** first, then build everything else around those decisions. Do not produce a first-pass template and polish later. Make deliberate, defensible design decisions. The finished site must feel **art-directed, experimental, Mediterranean, premium and memorable** — the fish, the typography, the composition, the motion, then the commerce.

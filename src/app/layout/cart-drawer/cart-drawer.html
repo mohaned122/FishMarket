@@ -1,0 +1,150 @@
+@if (cart.open()) {
+  <!-- Background dimmed with opacity only (H8) -->
+  <div
+    class="fixed inset-0 z-45 bg-navy opacity-40"
+    (click)="cart.close()"
+    aria-hidden="true"
+  ></div>
+
+  <aside
+    #panel
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="copy.title"
+    tabindex="-1"
+    class="fixed inset-y-0 right-0 z-50 flex w-full max-w-[34rem] flex-col bg-cream text-ink outline-none"
+  >
+    <header class="flex items-baseline justify-between px-6 py-6 md:px-8">
+      <h2 class="font-display text-[clamp(2.5rem,6vw,4rem)] leading-none">{{ copy.title }}</h2>
+      <button
+        type="button"
+        class="micro-label py-2"
+        (click)="cart.close()"
+        data-cursor="arrow"
+      >
+        {{ copy.close }}
+      </button>
+    </header>
+    <div class="hairline mx-6 h-px w-[calc(100%-3rem)] text-current opacity-30 md:mx-8 md:w-[calc(100%-4rem)]"></div>
+
+    @if (isEmpty()) {
+      <!-- Empty state is designed, not blank -->
+      <div class="flex flex-1 flex-col justify-center gap-6 px-6 md:px-8">
+        <p class="font-display text-[clamp(1.75rem,4vw,2.75rem)] leading-tight">
+          {{ copy.empty }}
+        </p>
+        <a
+          routerLink="/shop"
+          class="micro-label self-start border border-current px-5 py-3"
+          (click)="cart.close()"
+          data-cursor="arrow"
+        >
+          {{ copy.emptyAction }}
+        </a>
+      </div>
+    } @else {
+      <ol class="flex-1 overflow-y-auto px-6 md:px-8">
+        @for (line of lines(); track line.fishId + line.preparation) {
+          <li class="py-6">
+            <div class="flex items-baseline justify-between gap-4">
+              <h3 class="font-display text-[clamp(1.5rem,3.5vw,2.25rem)] leading-none">
+                {{ line.fish.name }}
+              </h3>
+              <p class="font-display text-[clamp(1.25rem,3vw,1.75rem)] tabular-nums">
+                {{ formatPrice(line.price) }}
+              </p>
+            </div>
+
+            <p class="micro-label mt-2 opacity-60">{{ line.preparation }}</p>
+
+            <div class="mt-4 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-0">
+                <button
+                  type="button"
+                  class="hairline grid size-9 place-items-center"
+                  (click)="decrement(line)"
+                  [attr.aria-label]="'Less ' + line.fish.name"
+                  data-cursor="arrow"
+                >
+                  −
+                </button>
+                <span class="micro-label w-20 text-center tabular-nums">{{ line.grams }} g</span>
+                <button
+                  type="button"
+                  class="hairline grid size-9 place-items-center"
+                  (click)="increment(line)"
+                  [attr.aria-label]="'More ' + line.fish.name"
+                  data-cursor="arrow"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="micro-label underline underline-offset-4 opacity-60 hover:opacity-100"
+                (click)="remove(line.fishId, line.preparation)"
+                [attr.aria-label]="copy.remove + ' ' + line.fish.name"
+              >
+                {{ copy.remove }}
+              </button>
+            </div>
+          </li>
+          <li class="hairline h-px w-full text-current opacity-25"></li>
+        }
+      </ol>
+
+      <div class="px-6 pt-6 pb-6 md:px-8 md:pb-8">
+        <div class="grid gap-3 md:grid-cols-2">
+          <label class="grid gap-1">
+            <span class="micro-label opacity-60">{{ copy.nameLabel }}</span>
+            <input
+              type="text"
+              class="hairline bg-transparent px-3 py-2 text-sm"
+              [value]="cart.customer().name"
+              (input)="updateName($any($event.target).value)"
+            />
+          </label>
+          <label class="grid gap-1">
+            <span class="micro-label opacity-60">{{ copy.phoneLabel }}</span>
+            <input
+              type="tel"
+              class="hairline bg-transparent px-3 py-2 text-sm"
+              [value]="cart.customer().phone"
+              (input)="updatePhone($any($event.target).value)"
+            />
+          </label>
+          <label class="grid gap-1 md:col-span-2">
+            <span class="micro-label opacity-60">{{ copy.notesLabel }}</span>
+            <input
+              type="text"
+              class="hairline bg-transparent px-3 py-2 text-sm"
+              [value]="cart.customer().notes"
+              (placeholder]="copy.notesPlaceholder"
+              (input)="updateNotes($any($event.target).value)"
+            />
+          </label>
+        </div>
+
+        <div class="hairline mt-6 h-px w-full text-current opacity-30"></div>
+
+        <div class="mt-4 flex items-baseline justify-between">
+          <span class="micro-label">{{ copy.total }}</span>
+          <span class="font-display text-[clamp(2rem,5vw,3rem)] tabular-nums">
+            {{ formatPrice(total()) }}
+          </span>
+        </div>
+
+        <a
+          [href]="whatsappLink()"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-6 flex w-full items-center justify-between bg-ink px-5 py-4 text-cream"
+          data-cursor="arrow"
+        >
+          <span class="micro-label">{{ copy.checkout }}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    }
+  </aside>
+}

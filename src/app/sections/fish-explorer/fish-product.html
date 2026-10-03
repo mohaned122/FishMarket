@@ -1,0 +1,75 @@
+<!--
+  Brief S6: an editorial object, not a card. Fish enormous and breaking out of
+  the panel, name huge in the serif behind it, metadata micro-sized.
+  K3 for this section: navy background, cream type, turquoise + peach accents.
+-->
+<article
+  class="group relative flex h-full flex-col justify-end"
+  [class.w-[62vw]]="fish().panelWidth === 'wide'"
+  [class.w-[42vw]]="fish().panelWidth === 'narrow'"
+  [class.w-[52vw]]="fish().panelWidth === 'tall'"
+>
+  <!-- Micro-metadata, revealed on hover (A10) -->
+  <div class="line-mask mb-4 h-4 overflow-hidden">
+    <div data-meta class="micro-label flex gap-3 text-turquoise">
+      <span>{{ fish().origin }}</span>
+      <span class="inline-block h-px w-6 self-center bg-current opacity-50"></span>
+      <span>Catch {{ fish().catchNo }}</span>
+      <span class="inline-block h-px w-6 self-center bg-current opacity-50"></span>
+      <span [class.text-peach]="fresh()">{{ availability[fish().availability] }}</span>
+    </div>
+  </div>
+
+  <!-- Name sits behind/overlapping the fish -->
+  <h3
+    data-name
+    class="pointer-events-none absolute bottom-[22%] left-0 z-0 font-display text-[clamp(3rem,9vw,8rem)] leading-[0.85] text-cream"
+  >
+    {{ fish().name }}
+  </h3>
+
+  <!-- The fish itself. It fills whatever height the stage has left over
+       (`flex-1`), so the section never reserves a full viewport and then pads the
+       remainder out into an empty band above Fresh Today. Under reduced motion
+       there is no pin and therefore no stage, so it falls back to a fixed
+       height that a wrapped grid can lay out. -->
+  <div
+    data-fish
+    data-cursor="view"
+    class="relative z-10 mb-4 w-full min-h-0 max-h-[min(52vh,34rem)] flex-1 origin-center motion-reduce:max-h-[min(34vw,26vh,22rem)] motion-reduce:flex-none"
+  >
+    <app-fish-image
+      [src]="fish().image"
+      [alt]="fish().name + ' — ' + fish().latin"
+      [accent]="fish().accent"
+      width="100%"
+      height="100%"
+    />
+  </div>
+
+  <p class="micro-label mb-4 opacity-50">{{ fish().latin }}</p>
+
+  <div class="flex items-end justify-between gap-6">
+    <!-- T6: price in the serif, tabular, with TND / KG as a micro-label -->
+    <div>
+      <span class="font-display text-[clamp(1.75rem,4vw,3rem)] tabular-nums">
+        {{ formatPrice(fish().pricePerKg) }}
+      </span>
+      <span class="micro-label ml-2 opacity-60">{{ '/ ' + fish().unit }}</span>
+    </div>
+
+    @if (soldOut()) {
+      <p class="micro-label line-through opacity-40">Sold out</p>
+    } @else {
+      <button
+        type="button"
+        class="micro-label flex items-center gap-2 border border-current px-4 py-3"
+        [attr.data-cursor]="'add'"
+        (click)="quickAdd.emit(fish())"
+      >
+        <span>Add</span>
+        <span data-arrow aria-hidden="true">→</span>
+      </button>
+    }
+  </div>
+</article>

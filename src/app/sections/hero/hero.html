@@ -1,0 +1,95 @@
+<!--
+  Brief S2: 100svh cream plane. S3: labels arranged off-grid.
+  K3 colour identity for this section: cream bg, navy type, ocean circle, coral labels.
+-->
+<section
+  #root
+  class="relative h-svh min-h-[36rem] w-full overflow-hidden bg-cream text-navy"
+>
+  <div #plane class="absolute inset-0 origin-center bg-cream"></div>
+
+  <!-- Very large ocean circle, deliberately cropped by the viewport -->
+  <div
+    #circle
+    class="circle absolute top-[6%] left-[46%] aspect-square w-[78vw] max-w-[62rem] origin-center bg-ocean md:w-[52vw]"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Line-art net crossing behind the fish (I5) -->
+  <div class="absolute inset-0 text-navy opacity-25" aria-hidden="true">
+    <app-line-art variant="net" [drawOnScroll]="false" />
+  </div>
+
+  <!-- Stacked headline, left-weighted. T7: real text, aria-label on the heading,
+       per-character split spans are hidden from assistive tech. -->
+  <h1
+    #headline
+    class="absolute top-[18%] left-5 z-20 font-display uppercase md:left-8"
+    [style.font-size]="'var(--text-hero)'"
+    [style.line-height]="'var(--text-hero--line-height)'"
+    [style.letter-spacing]="'var(--text-hero--letter-spacing)'"
+  >
+    @for (line of lines(); track line.text; let i = $index) {
+      <span class="line-mask" [class.md:pl-[14%]]="line.indent">
+        <span #lineEl class="inline-block whitespace-nowrap">
+          @for (char of line.chars; track $index) {
+            <span
+              data-char
+              class="inline-block"
+              [class.italic]="line.italic"
+              aria-hidden="true"
+              >{{ char === ' ' ? ' ' : char }}</span
+            >
+          }
+        </span>
+      </span>
+    }
+  </h1>
+
+  <!-- S2: the sea bass floats in front, overlapping the headline's lower lines
+       and breaking out of the circle. L4: one soft contact shadow. -->
+  <div
+    #fish
+    class="absolute top-[34%] right-[-6%] z-30 w-[74vw] origin-center md:right-[4%] md:w-[46vw]"
+    data-cursor="view"
+  >
+    <div
+      #shadow
+      class="circle absolute bottom-[4%] left-1/2 h-[6%] w-[46%] -translate-x-1/2 bg-navy opacity-20 blur-[6px]"
+      aria-hidden="true"
+    ></div>
+    <app-fish-image
+      [src]="item().image"
+      [alt]="item().name + ' — ' + item().latin"
+      [accent]="item().accent"
+      [eager]="true"
+      width="100%"
+      height="100%"
+    />
+  </div>
+
+  <!-- S3: editorial labels, deliberately off-grid -->
+  <div
+    data-hero-label
+    class="micro-label absolute top-[26%] left-5 z-30 flex items-center gap-3 md:left-8"
+  >
+    <span>{{ copy.labelTop[0] }}</span>
+    <span class="inline-block h-px w-10 bg-current opacity-50"></span>
+    <span class="text-coral">{{ copy.labelTop[1] }}</span>
+  </div>
+
+  <div
+    data-hero-label
+    class="micro-label absolute top-1/2 right-3 z-30 origin-center rotate-90 text-coral md:right-6"
+  >
+    {{ copy.labelRight }}
+  </div>
+
+  <div
+    data-scroll-cue
+    class="absolute bottom-8 left-5 z-30 flex flex-col gap-3 md:left-8"
+  >
+    <span class="micro-label">{{ copy.scrollCue }}</span>
+    <span class="inline-block h-14 w-px bg-navy opacity-50" aria-hidden="true"></span>
+  </div>
+</section>

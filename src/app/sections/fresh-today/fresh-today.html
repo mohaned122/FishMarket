@@ -1,0 +1,85 @@
+<!-- K3: coral background, ink / cream type, navy accent. -->
+<section
+  #root
+  class="relative overflow-hidden bg-coral px-5 pb-20 pt-6 text-ink md:px-8 md:pb-28 md:pt-8"
+>
+  <!-- S9: gigantic, partially cropped; the two words split apart on scroll -->
+  <h2 class="pointer-events-none relative z-0 font-display uppercase" aria-label="Fresh today">
+    <span #wordLeft class="block -ml-[6vw] text-[26vw] leading-[0.8]">Fresh</span>
+    <span #wordRight class="block translate-x-[10vw] text-[26vw] leading-[0.8]">Today</span>
+  </h2>
+
+  @if (items.length) {
+    <!-- Irregular editorial list, not a grid (S9) -->
+    <ul class="relative z-10 mt-16 flex flex-col gap-14 md:mt-24 md:gap-20">
+      @for (item of items; track item.id; let i = $index) {
+        <li
+          class="grid items-end gap-6 md:grid-cols-12"
+          [style.margin-left]="' ' + (i % 2 === 0 ? '0' : '8vw')"
+        >
+          <div
+            class="md:col-span-5"
+            [style.transform]="'translateY(' + (i % 3) * 8 + '%)'"
+          >
+            <div class="h-40 w-full md:h-56" [class.md:w-[120%]]="i % 2 === 1">
+              <app-fish-image
+                [src]="item.image"
+                [alt]="item.name + ' — ' + item.latin"
+                [accent]="item.accent"
+                width="100%"
+                height="100%"
+              />
+            </div>
+          </div>
+
+          <div class="md:col-span-6 md:col-start-7">
+            <div class="flex items-baseline justify-between gap-6">
+              <h3 class="font-display text-[clamp(2.5rem,7vw,5.5rem)] leading-[0.9]">
+                {{ item.name }}
+              </h3>
+              <span class="micro-label bg-ink px-3 py-2 text-coral">
+                {{ availability['fresh-today'] }}
+              </span>
+            </div>
+
+            <p class="micro-label mt-3 opacity-70">{{ item.latin }} — {{ item.origin }}</p>
+
+            <div class="mt-6 flex items-end justify-between gap-6">
+              <p class="font-display text-[clamp(1.5rem,3.5vw,2.5rem)] tabular-nums">
+                {{ formatPrice(item.pricePerKg) }}
+                <span class="micro-label ml-1 opacity-60">/ kg</span>
+              </p>
+              <button
+                type="button"
+                class="micro-label flex items-center gap-2 border border-current px-4 py-3"
+                (click)="add(item.id)"
+                [attr.data-cursor]="'add'"
+              >
+                <span>{{ adding() === item.id ? 'Added' : copy.add }}</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="relative z-10 mt-16 max-w-[46ch] text-lg leading-relaxed">
+      {{ copy.empty }}
+    </p>
+  }
+
+  <!-- Availability must be unmistakable: sold-out entries strike through (S9) -->
+  @if (gone.length) {
+    <div class="relative z-10 mt-20 border-t border-ink/30 pt-6">
+      <h3 class="micro-label opacity-60">Gone for today</h3>
+      <ul class="mt-4 flex flex-wrap gap-x-8 gap-y-2">
+        @for (item of gone; track item.id) {
+          <li class="micro-label line-through opacity-40">
+            {{ item.name }} — {{ formatPrice(item.pricePerKg) }}
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</section>

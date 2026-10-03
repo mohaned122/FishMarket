@@ -1,0 +1,55 @@
+<!-- K3: cream -> sand split. Headline spans two colour planes (S13). -->
+<section #root class="relative overflow-hidden">
+  <div class="grid md:grid-cols-2">
+    <div class="bg-cream px-5 py-20 text-navy md:px-8 md:py-32">
+      <h2
+        class="font-display uppercase"
+        [style.font-size]="'clamp(3rem,9vw,8rem)'"
+        [style.line-height]="'0.88'"
+      >
+        {{ copy.heading[0] }}<br />
+        <span class="italic">{{ copy.heading[1] }}</span>
+      </h2>
+    </div>
+
+    <div class="relative bg-sand px-5 py-20 text-ink md:px-8 md:py-32">
+      <div class="text-navy/20" aria-hidden="true">
+        <app-line-art variant="contour" />
+      </div>
+
+      <!-- C3: placeholder story, marked in copy.ts -->
+      <div #copyBlock class="relative z-10 max-w-[52ch] space-y-6 text-[1.05rem] leading-[1.75]">
+        @for (paragraph of copy.body; track $index) {
+          <p>{{ paragraph }}</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- S13: large plates with clip-path inset reveals -->
+  <div class="grid gap-6 bg-cream px-5 py-16 md:grid-cols-2 md:px-8 md:py-24">
+    @for (plate of copy.plates; track plate; let i = $index) {
+      <figure
+        data-plate
+        class="relative"
+        [style.margin-top]="i % 2 === 1 ? '12vh' : '0'"
+      >
+        <!-- Placeholder plane: no story photography supplied yet -->
+        <div
+          class="aspect-4/3 w-full overflow-hidden"
+          [class.bg-navy]="i % 2 === 0"
+          [class.bg-ocean]="i % 2 === 1"
+          role="img"
+          [attr.aria-label]="plate"
+        >
+          <div class="grid size-full place-items-center">
+            <span class="micro-label text-cream/70">{{ plate }}</span>
+          </div>
+        </div>
+        <figcaption class="micro-label mt-3 text-navy/60">
+          {{ plate }}
+        </figcaption>
+      </figure>
+    }
+  </div>
+</section>

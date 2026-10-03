@@ -1,0 +1,69 @@
+<a
+  href="#main"
+  class="micro-label sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-70 focus:bg-cream focus:px-3 focus:py-2 focus:text-navy"
+  >{{ copy.skipToContent }}</a
+>
+
+<header class="px-5 py-5 md:px-8">
+  <div class="grid grid-cols-3 items-center gap-4">
+    <button
+      type="button"
+      class="micro-label justify-self-start py-2"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="site-menu"
+    >
+      {{ menuOpen() ? copy.close : copy.menu }}
+    </button>
+
+    <a
+      routerLink="/"
+      class="micro-label justify-self-center py-2 text-center"
+      [attr.aria-label]="brand.name"
+      (click)="closeMenu()"
+      >{{ brand.name }}</a
+    >
+
+    <nav class="flex items-center justify-self-end gap-4 md:gap-6" aria-label="Primary">
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="line-through"
+          class="micro-label hidden py-2 md:inline-block"
+          (click)="closeMenu()"
+          >{{ link.label }}</a
+        >
+      }
+      <button type="button" class="micro-label py-2" (click)="openCart()">
+        {{ copy.cart }}({{ count() }})
+      </button>
+    </nav>
+  </div>
+  <div class="hairline mt-4 h-px w-full text-current opacity-40"></div>
+</header>
+
+<!-- Full-screen overlay with giant serif links (S1) -->
+@if (menuOpen()) {
+  <div
+    id="site-menu"
+    class="fixed inset-0 z-50 flex flex-col justify-center bg-navy px-8 text-cream mix-blend-normal"
+  >
+    <nav class="flex flex-col items-start gap-2" aria-label="Menu">
+      <a
+        routerLink="/"
+        class="font-display text-[clamp(3.5rem,14vw,9rem)] leading-[0.9]"
+        (click)="closeMenu()"
+        >{{ brand.name }}</a
+      >
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          class="font-display text-[clamp(3.5rem,14vw,9rem)] leading-[0.9] italic"
+          (click)="closeMenu()"
+          >{{ link.label }}</a
+        >
+      }
+    </nav>
+    <p class="micro-label mt-12 opacity-60">{{ brand.city }} — {{ brand.tagline }}</p>
+  </div>
+}

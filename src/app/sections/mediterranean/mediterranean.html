@@ -1,0 +1,57 @@
+<!-- K3: ocean / turquoise / navy layered planes, cream type, peach sun. S14. -->
+<section #root class="relative overflow-hidden bg-navy text-cream">
+  <div class="relative h-svh w-full overflow-hidden">
+    <!-- Depth planes, back to front -->
+    <div #scene class="absolute inset-0 origin-center">
+      <div data-plane data-speed="0.15" class="absolute inset-0 bg-ocean"></div>
+      <div data-plane data-speed="0.3" class="absolute inset-x-0 bottom-0 h-[45%] bg-turquoise"></div>
+      <div data-plane data-speed="0.5" class="absolute inset-x-0 bottom-0 h-[22%] bg-navy"></div>
+      <div
+        data-plane
+        data-speed="0.7"
+        class="circle absolute top-[18%] right-[12%] aspect-square w-[26vw] bg-peach"
+      ></div>
+
+      <!-- Inline SVG boat, layer 3 -->
+      <div
+        data-plane
+        data-speed="0.5"
+        class="absolute bottom-[18%] left-[14%] w-[34vw] text-navy"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 300 120" fill="none" stroke="currentColor" stroke-width="2" class="w-full">
+          <path d="M20 88h260l-34 26H62Z" />
+          <path d="M150 88V14" />
+          <path d="M150 20 96 82h54Z" />
+          <path d="M156 34l44 48h-44Z" />
+          <path d="M8 104c14-8 28-8 42 0s28 8 42 0 28-8 42 0 28 8 42 0 28-8 42 0 28 8 42 0" stroke-opacity=".5" />
+        </svg>
+      </div>
+
+      <!-- Waves, drifting -->
+      <div data-waves class="absolute inset-x-0 bottom-[8%] h-[18%] text-turquoise opacity-50" aria-hidden="true">
+        <app-line-art variant="waves" [drawOnScroll]="false" [stagger]="0.02" />
+      </div>
+
+      <!-- TASTE / THE / MEDITERRANEAN. revealed word by word -->
+      <h2
+        class="absolute inset-0 z-20 flex flex-col items-start justify-center px-5 font-display uppercase md:px-8"
+        [style.font-size]="'var(--text-section)'"
+        [style.line-height]="'0.85'"
+        [attr.aria-label]="copy.words.join(' ')"
+      >
+        @for (item of words(); track item.word) {
+          <span class="line-mask">
+            <span #word class="inline-block" [class.italic]="item.index === 1" aria-hidden="true">
+              {{ item.word }}
+            </span>
+          </span>
+        }
+      </h2>
+    </div>
+  </div>
+
+  <p class="max-w-[46ch] px-5 py-16 text-lg leading-relaxed opacity-80 md:px-8 md:py-24">
+    {{ copy.body }}
+  </p>
+</section>

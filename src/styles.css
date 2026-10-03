@@ -1,3 +1,144 @@
-/* You can add global styles to this file, and also import other style files */
+/* `source(none)` disables Tailwind's automatic content detection, then we
+   re-enable it for templates only. Without this the build scans every
+   gitignored-path file in the repo — including the root `todo` brief, which
+   contains the literal text `bg-[url(...)]` and makes the CSS resolver try to
+   import a module named `...`. */
+@import "tailwindcss" source(none);
 
-@import "tailwindcss";
+@source "./**/*.{ts,html}";
+
+/* ------------------------------------------------------------------
+   BRAND TOKENS — brief §2.2 (K1-K3)
+   Tailwind v4 is CSS-first: there is deliberately NO tailwind.config.js.
+   Everything below becomes utilities, e.g. `bg-navy`, `text-coral`,
+   `font-display`, `border-hair`.
+   ------------------------------------------------------------------ */
+@theme {
+  /* Palette (brief §2.2) */
+  --color-navy: #071342;
+  --color-ocean: #23869c;
+  --color-turquoise: #63aeb6;
+  --color-peach: #e39a7c;
+  --color-coral: #d86f55;
+  --color-cream: #e4e0d4;
+  --color-sand: #b6a58d;
+  --color-ink: #171715;
+
+  /* Type (brief T1) */
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-ui: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Display scale (brief T2/T3) */
+  --text-hero: clamp(5.5rem, 24vw, 28rem);
+  --text-hero--line-height: 0.78;
+  --text-hero--letter-spacing: -0.03em;
+  --text-section: clamp(3.5rem, 13vw, 16rem);
+  --text-section--line-height: 0.85;
+  --text-section--letter-spacing: -0.02em;
+
+  /* Micro-label (brief T4) — 10-11px, uppercase, wide tracking */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1;
+  --text-micro--letter-spacing: 0.18em;
+
+  /* Breakpoints (brief R1) */
+  --breakpoint-tablet: 768px;
+  --breakpoint-laptop: 1280px;
+}
+
+/* ------------------------------------------------------------------
+   BASE
+   ------------------------------------------------------------------ */
+@layer base {
+  html {
+    /* R4: never allow horizontal page overflow at any width */
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  /* Radius is 0 by default (L3); the circle is the only round motif. */
+  * {
+    border-radius: 0;
+  }
+
+  /* Every scrollbar is suppressed: the page, the explorer track, the cart and
+     the quick-add sheet. Firefox takes `scrollbar-width`, WebKit/Blink take the
+     pseudo-element. Scrollable regions stay keyboard-operable. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* S18 / X2. `hidden-cursor` is added to <html> by the Cursor component only
+     after it has confirmed a fine pointer and no reduced-motion preference, and
+     removed again on destroy. The `!important` and the universal selector are
+     both required: without them any `cursor-pointer` utility wins and the
+     browser pointer reappears over links and buttons. */
+  html.hidden-cursor,
+  html.hidden-cursor *,
+  html.hidden-cursor *::before,
+  html.hidden-cursor *::after {
+    cursor: none !important;
+  }
+
+  /* X2: visible, high-contrast focus rings everywhere */
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: var(--color-navy);
+    color: var(--color-cream);
+  }
+}
+
+/* ------------------------------------------------------------------
+   UTILITIES
+   ------------------------------------------------------------------ */
+@utility micro-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-micro);
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* L4: 1px hairline in navy/cream at low opacity */
+@utility hairline {
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+}
+
+/* K3: the circular motif (hero circle, cursor, cut markers) */
+@utility circle {
+  border-radius: 9999px;
+}
+
+/* Word-by-word / line-by-line mask reveal scaffolding.
+   Initial states are set by GSAP (A7), never here, so content stays
+   usable when JS fails. */
+@utility line-mask {
+  overflow: hidden;
+  display: block;
+}
+
+/* X1 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

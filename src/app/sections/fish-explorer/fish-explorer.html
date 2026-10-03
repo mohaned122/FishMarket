@@ -1,0 +1,77 @@
+<!--
+  Brief K3: navy background, cream type, turquoise + peach accents.
+  S5 desktop pins and scrubs the track; S7 mobile is a native snap carousel.
+-->
+<section #root class="relative bg-navy text-cream">
+  <div class="flex h-svh flex-col justify-center overflow-hidden motion-reduce:h-auto">
+    <!-- S5: heading is oversized and moves at a different rate than the track.
+         Deliberately smaller than `--text-section`: at 16rem a two-line heading
+         ate 40% of a pinned viewport, which is what left the dead band above
+         Fresh Today. -->
+    <div class="pointer-events-none relative z-20 px-5 md:px-8">
+      <h2
+        #heading
+        class="font-display uppercase"
+        [style.font-size]="'clamp(2.75rem, 8.5vw, 8.5rem)'"
+        [style.line-height]="'0.85'"
+      >
+        {{ copy.heading[0] }}<br />
+        <span class="italic">{{ copy.heading[1] }}</span>
+      </h2>
+    </div>
+
+    <!-- The track. `w-max` on desktop is load-bearing, not cosmetic.
+
+         GSAP translates THIS element on x. While it was `w-full` — a box exactly
+         one viewport wide — translating it 3000px to the left moved its own box
+         off screen, so the section showed bare navy and the only way to reach the
+         remaining catch was to scroll the box sideways by hand. Sizing it to its
+         content (`w-max`) means the box is wider than the viewport, so translating
+         it by exactly its overflow keeps it covering the screen while the panels
+         travel through.
+
+         Mobile keeps `w-full overflow-x-auto` and the native scroll-snap carousel
+         (S7), which is why both sets of utilities are here.
+
+         `motion-reduce:` collapses the reserved viewport and wraps the panels, so
+         with pinning off (brief X1) every fish is visible at once. -->
+    <div
+      #track
+      class="mt-8 flex w-full min-h-0 flex-1 snap-x snap-mandatory items-center gap-[8vw] overflow-x-auto px-5 md:mt-10 md:w-max md:gap-[30vw] md:overflow-visible md:px-8 md:snap-none motion-reduce:h-auto motion-reduce:flex-none motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:overflow-visible"
+      data-cursor="drag"
+      tabindex="0"
+      role="group"
+      [attr.aria-label]="copy.heading.join(' ')"
+    >
+      @for (item of items; track item.id; let i = $index) {
+        <div
+          data-panel
+          class="shrink-0 snap-center"
+          [class.self-start]="item.align === 'top'"
+          [class.self-center]="item.align === 'center'"
+          [class.self-end]="item.align === 'bottom'"
+          [style.margin-block]="' ' + (i % 2 === 0 ? '0' : '3vh')"
+        >
+          <app-fish-product [fish]="item" [position]="i + 1" (quickAdd)="open($event)" />
+        </div>
+      }
+    </div>
+
+    <!-- S5: thin progress rule + counter -->
+    <div class="mt-6 flex items-center gap-6 px-5 md:mt-8 md:px-8">
+      <div #progress class="hairline relative h-px flex-1 text-current opacity-30">
+        <div
+          class="absolute inset-y-0 left-0 bg-turquoise transition-[width] duration-300 ease-linear"
+          [style.width.%]="items.length > 1 ? (activeIndex() / (items.length - 1)) * 100 : 100"
+        ></div>
+      </div>
+      <p class="micro-label tabular-nums" [attr.aria-label]="copy.progressLabel">
+        {{ counter() }}
+      </p>
+    </div>
+  </div>
+</section>
+
+@if (selected(); as item) {
+  <app-quick-add [item]="item" (closed)="close()" />
+}

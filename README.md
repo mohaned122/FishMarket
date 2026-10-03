@@ -73,4 +73,3 @@ Use Angular CLI commands to generate new application code:
 ng generate component component-name
 ```
 
-For more information, see the [Angular CLI documentation](https://angular.dev/tools/cli).
