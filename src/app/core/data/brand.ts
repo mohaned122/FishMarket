@@ -1,10 +1,10 @@
 export const brand = {
   name: 'MARIANA',
   tagline: 'Fresh from the Mediterranean, delivered to your door.',
-  // EDIT: replace with the owner's real WhatsApp number, international format, digits only.
-  // Falls back to a clearly-marked placeholder until then (brief B2).
+  // Owner-confirmed on 2026-10-03, international format. Spaces are stripped by
+  // `whatsappUrl()`, so they are kept here for legibility.
   whatsappNumber: '216 90 283 798',
-  whatsappNumberIsPlaceholder: true,
+  whatsappNumberIsPlaceholder: false,
   city: 'Djerba',
   currency: 'TND',
   locale: 'fr-TN',

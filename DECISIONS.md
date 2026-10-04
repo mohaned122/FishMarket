@@ -129,6 +129,27 @@ One line each, per the brief's decision policy. Anything marked `// EDIT:` in
     Brief X1 forbids pinning under reduced motion, and with no pin the reserved
     viewport would leave an empty field. Reduced motion collapses the stage to
     content height and wraps the panels so every fish is visible at once.
+29. **Deployment is static Firebase Hosting, not an SSR function.** All three
+    routes carry `RenderMode.Prerender`, and the build emits a real HTML document
+    for each one (`index.html`, `shop/index.html`, `story/index.html`), so there
+    is nothing left for a runtime to render. Serving `dist/9sharti/browser`
+    directly avoids provisioning a Cloud Function and a Node runtime for a site
+    whose every route is already static. Consequence: a new route must be
+    prerendered or it will 404 — there is no SSR fallback behind the CDN.
+30. `firebase.json` had no `hosting` target at all, which is why this build was
+    not deployable as configured. Added `public: dist/9sharti/browser`,
+    `cleanUrls`, and a hosting emulator on :5000.
+31. **Cache-Control rule order is load-bearing.** The `**` baseline sets
+    `no-cache` for everything and the hashed-asset rules *after* it override with
+    `immutable`. The first attempt led with a `**/*.@(html)` rule, which can never
+    match anything: with `cleanUrls` the request paths are `/`, `/shop` and
+    `/story`, none of which end in `.html`. Every document therefore fell through
+    to Firebase's own `max-age=3600`, so deploys stayed invisible for up to an
+    hour. Verified: HTML `no-cache`, `main-*.js` / `styles-*.css`
+    `max-age=31536000, immutable`, images `max-age=604800`.
+32. Deployed with `--only hosting` semantics in mind: `firestore.rules` is
+    `allow read, write` for anyone and must not be pushed to a live site. Tighten
+    the rules before deploying them.
 
 ## Known gaps — not claimed as done
 
